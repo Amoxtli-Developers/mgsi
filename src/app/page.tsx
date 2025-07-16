@@ -3,7 +3,7 @@ import AboutSection from '@/components/sections/AboutSection';
 import ServicesSection from '@/components/sections/ServicesSection';
 import TestimonialsSection from '@/components/sections/TestimonialsSection';
 import ContactSection from '@/components/sections/ContactSection';
-import ClientPortfolio from '@/components/ClientPortfolio';
+import PropertiesWrapper from '@/components/PropertiesWrapper';
 import JsonLd from '@/components/ui/JsonLd';
 
 export default function Home() {
@@ -43,7 +43,7 @@ export default function Home() {
       <HeroSection />
       <AboutSection />
       <ServicesSection />
-      <ClientPortfolio />
+      <PropertiesWrapper />
       <TestimonialsSection />
       <ContactSection />
     </>
