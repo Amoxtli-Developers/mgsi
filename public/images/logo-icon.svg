@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 250">
+  <defs>
+    <style>.cls-1{fill:#b40039;}</style>
+  </defs>
+  <g>
+    <polygon class="cls-1" points="150 70 95 72 30 10 108 0 150 70"/>
+    <polygon class="cls-1" points="52 240 54 260 82 253 82 237 52 240"/>
+    <polygon class="cls-1" points="52 210 52 225 8 220 50 237 80 233 80 208 52 210"/>
+    <polygon class="cls-1" points="5 183 52 208 82 205 80 180 54 182 51 193 5 183"/>
+    <polygon class="cls-1" points="0 148 52 182 80 178 82 156 56 159 55 163 0 148"/>
+    <polygon class="cls-1" points="3 117 55 156 85 152 91 130 60 137 3 117"/>
+    <polygon class="cls-1" points="6 92 63 132 112 124 116 103 69 110 6 92"/>
+    <polygon class="cls-1" points="9 66 72 110 120 103 132 82 80 89 9 66"/>
+    <polygon class="cls-1" points="18 38 82 85 135 80 148 62 90 64 18 38"/>
+    <polygon class="cls-1" points="100 117 143 153 176 153 148 115 100 117"/>
+    <polygon class="cls-1" points="94 137 132 168 163 165 171 154 138 154 94 137"/>
+    <polygon class="cls-1" points="88 155 125 180 156 177 163 165 130 168 88 155"/>
+    <polygon class="cls-1" points="85 170 118 194 150 190 154 180 123 184 85 170"/>
+    <polygon class="cls-1" points="83 187 115 213 141 207 147 196 120 200 83 187"/>
+    <polygon class="cls-1" points="83 208 112 229 138 223 141 211 115 217 83 208"/>
+    <polygon class="cls-1" points="85 230 112 245 136 241 138 226 115 230 115 237 85 230"/>
+    <polygon class="cls-1" points="85 250 112 261 135 256 135 240 114 244 114 251 85 250"/>
+  </g>
+</svg>

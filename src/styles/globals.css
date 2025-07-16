@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 5%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 5%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 5%;
+    --primary: 348 100% 35%; /* #B40039 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 348 100% 35%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground overflow-x-hidden;
+    scroll-behavior: smooth;
+  }
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
+}
+
+@layer components {
+  .container {
+    @apply max-w-7xl px-4 mx-auto sm:px-6 lg:px-8;
+  }
+  .section-title {
+    @apply text-3xl font-bold mb-8 text-center md:text-4xl lg:text-5xl;
+  }
+  .section-padding {
+    @apply py-16 md:py-24;
+  }
+}
+
+/* Swiper customizations */
+.swiper-button-next,
+.swiper-button-prev {
+  color: #B40039 !important;
+  background-color: white !important;
+  border-radius: 50% !important;
+  width: 44px !important;
+  height: 44px !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
+}
+
+.swiper-button-next:after,
+.swiper-button-prev:after {
+  font-size: 18px !important;
+  font-weight: bold !important;
+}
+
+.swiper-pagination-bullet {
+  background: #cccccc !important;
+  opacity: 0.6 !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: #B40039 !important;
+  opacity: 1 !important;
+}
