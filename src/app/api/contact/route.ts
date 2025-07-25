@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import sgMail from '@sendgrid/mail';
 import { z } from 'zod';
 
+// Forzar renderizado dinámico
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 // Initialize SendGrid
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);

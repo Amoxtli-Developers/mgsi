@@ -1,3 +1,6 @@
+// Forzar renderizado dinámico para evitar errores de SSG
+export const dynamic = 'force-dynamic';
+
 import AdminWrapper from '@/components/admin/AdminWrapper';
 
 export const metadata = {

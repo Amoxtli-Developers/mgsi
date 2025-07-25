@@ -55,7 +55,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
         console.log('🍪 Verificando cookie inmediatamente...');
         
         // Establecer cookie manualmente también desde el cliente como backup
-        const backupToken = Buffer.from(`${Date.now()}-mgsi-admin`).toString('base64');
+        const backupToken = btoa(`${Date.now()}-mgsi-admin`);
         document.cookie = `mgsi-admin-token=${backupToken}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
         console.log('🔧 Cookie establecida manualmente como backup');
         

@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateCredentials, createAuthCookie, type LoginCredentials } from '@/lib/auth';
+import { validateCredentials, createAuthToken, type LoginCredentials } from '@/lib/auth';
+
+// Forzar renderizado dinámico
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,7 +23,7 @@ export async function POST(request: NextRequest) {
       console.log('✅ Credenciales válidas, creando cookie...');
       
       // Crear token simple
-      const token = Buffer.from(`${Date.now()}-mgsi-admin`).toString('base64');
+      const token = createAuthToken();
       console.log('🎫 Token creado:', token.substring(0, 20) + '...');
       
       const response = NextResponse.json(
@@ -30,7 +34,7 @@ export async function POST(request: NextRequest) {
       // Establecer la cookie con configuración más permisiva para desarrollo
       response.cookies.set('mgsi-admin-token', token, {
         httpOnly: false, // Cambiado a false para que sea accesible desde JS
-        secure: false, // false para desarrollo local
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax', // más permisivo para desarrollo
         maxAge: 60 * 60 * 24 * 7, // 7 días
         path: '/',

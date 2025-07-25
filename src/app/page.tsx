@@ -1,3 +1,6 @@
+// Forzar renderizado dinámico para APIs que requieren variables de entorno
+export const dynamic = 'force-dynamic';
+
 import HeroSection from '@/components/sections/HeroSection';
 import AboutSection from '@/components/sections/AboutSection';
 import ServicesSection from '@/components/sections/ServicesSection';

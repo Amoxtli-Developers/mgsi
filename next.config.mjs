@@ -2,6 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  // Forzar renderizado dinámico para todas las rutas que usan variables de entorno
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
+  },
   images: {
     remotePatterns: [
       {
@@ -20,8 +24,9 @@ const nextConfig = {
     ],
     unoptimized: false,
   },
-  experimental: {
-    optimizePackageImports: ['lucide-react'],
+  // Asegurar que las variables de entorno estén disponibles en build time
+  env: {
+    CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
 };
 
