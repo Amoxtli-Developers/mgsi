@@ -35,37 +35,39 @@ export default function AboutSection() {
     <section id="about" className="section-padding bg-white" ref={sectionRef}>
       <div className="container">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="text-center mb-24"
         >
-          <h2 className="section-title">Acerca de Nosotros</h2>
-          <p className="max-w-3xl mx-auto text-lg text-gray-600">
-            Somos un grupo de profesionistas con más de 40 años de experiencia en el área 
-            inmobiliaria, administrativa y legal, con el propósito de ayudar a nuestros 
-            clientes en operaciones de compra, venta, renta y administración inmobiliaria.
-          </p>
+          <h2 className="section-title text-balance">Acerca de Nosotros</h2>
+          <div className="max-w-2xl mx-auto">
+            <p className="text-base text-gray-600 leading-relaxed font-light">
+              Somos un grupo de profesionistas con más de 40 años de experiencia en el área 
+              inmobiliaria, administrativa y legal, con el propósito de ayudar a nuestros 
+              clientes en operaciones de compra, venta, renta y administración inmobiliaria.
+            </p>
+          </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
               <motion.div
                 key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
+                transition={{ duration: 0.8, delay: index * 0.15, ease: "easeOut" }}
                 className="text-center group"
               >
-                <div className="bg-brand-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-brand-primary/20 transition-colors">
-                  <Icon className="h-8 w-8 text-brand-primary" />
+                <div className="w-12 h-12 mx-auto mb-6 flex items-center justify-center">
+                  <Icon className="h-6 w-6 text-brand-primary group-hover:scale-110 transition-transform duration-300" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-gray-900">
+                <h3 className="text-lg font-light mb-4 text-gray-900 tracking-tight">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-sm text-gray-500 leading-relaxed font-light">
                   {feature.description}
                 </p>
               </motion.div>
@@ -75,22 +77,24 @@ export default function AboutSection() {
 
         {/* Mission Statement */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="bg-gray-50 p-8 rounded-lg mt-16"
+          transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
+          className="mt-32"
         >
-          <div className="max-w-4xl mx-auto text-center">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              Nuestra Misión
-            </h3>
-            <p className="text-lg text-gray-600 leading-relaxed">
-              Brindar servicios inmobiliarios integrales de la más alta calidad, 
-              combinando nuestra vasta experiencia con un enfoque personalizado 
-              para cada cliente. Nos comprometemos a facilitar las decisiones 
-              inmobiliarias más importantes de nuestros clientes con transparencia, 
-              profesionalismo y dedicación.
-            </p>
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="border-t border-gray-100 pt-16">
+              <h3 className="text-xl font-light text-gray-900 mb-8 tracking-tight">
+                Nuestra Misión
+              </h3>
+              <p className="text-base text-gray-600 leading-loose font-light">
+                Brindar servicios inmobiliarios integrales de la más alta calidad, 
+                combinando nuestra vasta experiencia con un enfoque personalizado 
+                para cada cliente. Nos comprometemos a facilitar las decisiones 
+                inmobiliarias más importantes de nuestros clientes con transparencia, 
+                profesionalismo y dedicación.
+              </p>
+            </div>
           </div>
         </motion.div>
       </div>

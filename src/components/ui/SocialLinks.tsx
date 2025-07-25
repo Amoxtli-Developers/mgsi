@@ -33,10 +33,10 @@ const socialLinks = [
 export default function SocialLinks() {
   return (
     <motion.div
-      className="fixed left-6 top-1/2 transform -translate-y-1/2 z-40 hidden lg:flex flex-col space-y-3"
-      initial={{ opacity: 0, x: -50 }}
+      className="fixed left-8 top-1/2 transform -translate-y-1/2 z-40 hidden lg:flex flex-col space-y-2"
+      initial={{ opacity: 0, x: -30 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 1.5, duration: 0.8 }}
+      transition={{ delay: 1.5, duration: 0.8, ease: "easeOut" }}
     >
       {socialLinks.map((social, index) => {
         const Icon = social.icon;
@@ -46,15 +46,15 @@ export default function SocialLinks() {
             href={social.href}
             target={social.href.startsWith('http') ? '_blank' : '_self'}
             rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-            className={`${social.color} text-white p-3 rounded-full shadow-lg transition-all duration-300 group`}
-            whileHover={{ scale: 1.1, x: 5 }}
+            className={`${social.color} text-white p-2 rounded-sm shadow-sm transition-all duration-300 group hover:shadow-md`}
+            whileHover={{ scale: 1.05, x: 3 }}
             whileTap={{ scale: 0.95 }}
-            initial={{ opacity: 0, x: -30 }}
+            initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 1.5 + index * 0.1 }}
+            transition={{ delay: 1.5 + index * 0.1, ease: "easeOut" }}
             aria-label={social.name}
           >
-            <Icon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+            <Icon className="h-4 w-4 transition-transform" strokeWidth={1.5} />
           </motion.a>
         );
       })}

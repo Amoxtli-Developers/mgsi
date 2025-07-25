@@ -5,25 +5,25 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 5%;
+    --foreground: 0 0% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 5%;
+    --card-foreground: 0 0% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 5%;
+    --popover-foreground: 0 0% 15%;
     --primary: 348 100% 35%; /* #B40039 */
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --secondary: 0 0% 98%;
+    --secondary-foreground: 0 0% 25%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 25%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --border: 0 0% 92%;
+    --input: 0 0% 94%;
     --ring: 348 100% 35%;
-    --radius: 0.5rem;
+    --radius: 0.25rem;
   }
 }
 
@@ -34,6 +34,9 @@
   body {
     @apply bg-background text-foreground overflow-x-hidden;
     scroll-behavior: smooth;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    letter-spacing: -0.01em;
+    line-height: 1.6;
   }
   html {
     scroll-behavior: smooth;
@@ -43,39 +46,78 @@
 
 @layer components {
   .container {
-    @apply max-w-7xl px-4 mx-auto sm:px-6 lg:px-8;
+    @apply max-w-6xl px-6 mx-auto sm:px-8 lg:px-12;
   }
   .section-title {
-    @apply text-3xl font-bold mb-8 text-center md:text-4xl lg:text-5xl;
+    @apply text-2xl font-light mb-16 text-center md:text-3xl lg:text-4xl tracking-tight leading-tight;
+    letter-spacing: -0.02em;
   }
   .section-padding {
-    @apply py-16 md:py-24;
+    @apply py-20 md:py-32 lg:py-40;
+  }
+  .minimal-card {
+    @apply bg-white border border-gray-100 rounded-sm p-8 md:p-12 shadow-sm hover:shadow-md transition-all duration-500;
+  }
+  .minimal-button {
+    @apply px-8 py-4 text-sm font-normal tracking-wide transition-all duration-300 border border-transparent;
+  }
+  .minimal-button-primary {
+    @apply minimal-button bg-brand-primary text-white hover:bg-brand-primary/90 focus:ring-2 focus:ring-brand-primary/20;
+  }
+  .minimal-button-secondary {
+    @apply minimal-button bg-white text-gray-900 border-gray-200 hover:bg-gray-50 focus:ring-2 focus:ring-gray-200;
+  }
+  .text-balance {
+    text-wrap: balance;
   }
 }
 
-/* Swiper customizations */
+/* Swiper customizations - Minimal style */
 .swiper-button-next,
 .swiper-button-prev {
   color: #B40039 !important;
   background-color: white !important;
-  border-radius: 50% !important;
-  width: 44px !important;
-  height: 44px !important;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
+  border-radius: 2px !important;
+  width: 32px !important;
+  height: 32px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.3s ease !important;
+  margin-top: -16px !important;
+}
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-1px) !important;
 }
 
 .swiper-button-next:after,
 .swiper-button-prev:after {
-  font-size: 18px !important;
-  font-weight: bold !important;
+  font-size: 12px !important;
+  font-weight: normal !important;
+}
+
+.swiper-pagination {
+  bottom: -20px !important;
 }
 
 .swiper-pagination-bullet {
-  background: #cccccc !important;
-  opacity: 0.6 !important;
+  background: #e5e7eb !important;
+  opacity: 1 !important;
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 1px !important;
+  transition: all 0.3s ease !important;
+  margin: 0 4px !important;
 }
 
 .swiper-pagination-bullet-active {
   background: #B40039 !important;
-  opacity: 1 !important;
+  width: 20px !important;
+  border-radius: 3px !important;
+}
+
+.property-swiper {
+  padding-bottom: 30px !important;
 }
