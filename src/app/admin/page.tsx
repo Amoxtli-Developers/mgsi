@@ -1,4 +1,4 @@
-import AdminDashboard from '@/components/admin/AdminDashboard';
+import AdminWrapper from '@/components/admin/AdminWrapper';
 
 export const metadata = {
   title: 'Panel de Administración - MG Servicio Inmobiliario',
@@ -10,5 +10,5 @@ export const metadata = {
 };
 
 export default function AdminPage() {
-  return <AdminDashboard />;
+  return <AdminWrapper />;
 }
