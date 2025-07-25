@@ -62,7 +62,7 @@ export default function PortfolioSection({ properties }: PortfolioSectionProps) 
                   {/* Imagen con altura reducida */}
                   <div className="relative w-full h-64 md:h-80 mb-6 overflow-hidden">
                     <Image
-                      src={property.image || 'https://via.placeholder.com/800x400?text=Propiedad'}
+                      src={property.image || 'https://via.placeholder.com/800x400'}
                       alt={property.name}
                       fill
                       className="object-cover transition-transform duration-700 hover:scale-105"

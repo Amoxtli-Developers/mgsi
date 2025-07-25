@@ -2,10 +2,7 @@ import { Inter } from 'next/font/google';
 import { ReactNode } from 'react';
 import '@/styles/globals.css';
 import { Providers } from './providers';
-import Header from '@/components/ui/Header';
-import Footer from '@/components/ui/Footer';
-import WhatsAppButton from '@/components/ui/WhatsAppButton';
-import SocialLinks from '@/components/ui/SocialLinks';
+import ConditionalLayout from '@/components/ConditionalLayout';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -44,6 +41,7 @@ export const metadata = {
     description: 'Empresa especializada en propiedades inmobiliarias con más de 40 años de experiencia en el mercado mexicano.',
   },
 };
+
 interface RootLayoutProps {
   children: React.ReactNode;
 }
@@ -53,14 +51,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="es" className={`${inter.variable} scroll-smooth`}>
       <body className="min-h-screen bg-background font-sans antialiased overflow-x-hidden">
         <Providers>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <WhatsAppButton />
-          <SocialLinks />
+          <ConditionalLayout>
+            {children}
+          </ConditionalLayout>
         </Providers>
       </body>
     </html>
   );
-};
-
+}

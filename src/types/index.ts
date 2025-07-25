@@ -8,7 +8,8 @@ export interface Property {
   amenities: string[];
   notes: string;
   image: string;
-  type?: 'Renta' | 'Venta';
+  type?: 'Renta' | 'Venta' | 'Ambos';
+  active: boolean;
   createdAt: string;
   updatedAt: string;
 }
