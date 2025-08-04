@@ -2,7 +2,17 @@ import { Inter } from 'next/font/google';
 import { ReactNode } from 'react';
 import '@/styles/globals.css';
 import { Providers } from './providers';
-import ConditionalLayout from '@/components/ConditionalLayout';
+import dynamic from 'next/dynamic';
+
+// Importación dinámica del layout condicional
+const ConditionalLayout = dynamic(() => import('@/components/ConditionalLayout'), {
+  ssr: false,
+  loading: () => (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="h-16 w-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  ),
+});
 
 const inter = Inter({
   subsets: ['latin'],
@@ -11,7 +21,7 @@ const inter = Inter({
 });
 
 export const metadata = {
-  metadataBase: new URL(process.env.NEXTAUTH_URL || 'https://mgsi.netlify.app'),
+  metadataBase: new URL('https://mgsi.netlify.app'),
   title: 'MG Servicio Inmobiliario | Expertos en Propiedades en México',
   description: 'Empresa especializada en propiedades inmobiliarias con más de 40 años de experiencia en el mercado mexicano. Asesoramiento para compra, venta y renta de propiedades.',
   keywords: 'inmobiliaria, propiedades, bienes raíces, casas en venta, departamentos en renta, servicios inmobiliarios, asesores inmobiliarios',

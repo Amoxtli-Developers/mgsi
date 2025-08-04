@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import HeroSection from '@/components/sections/HeroSection';
 import AboutSection from '@/components/sections/AboutSection';
@@ -31,6 +34,19 @@ const PropertiesWrapper = dynamic(() => import('@/components/PropertiesWrapper')
 });
 
 export default function Home() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="h-16 w-16 border-4 border-brand-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "RealEstateAgent",
