@@ -33,22 +33,6 @@ export default function AdminClientLayout({ children }: AdminClientLayoutProps) 
                   <Home className="h-4 w-4 mr-3 text-gray-500" strokeWidth={1.5} />
                   <span>Dashboard</span>
                 </a>
-                
-                <a
-                  href="/admin/properties"
-                  className="flex items-center px-4 py-3 text-sm font-light text-gray-600 rounded-sm transition-colors hover:bg-gray-100"
-                >
-                  <Users className="h-4 w-4 mr-3 text-gray-500" strokeWidth={1.5} />
-                  <span>Propiedades</span>
-                </a>
-                
-                <a
-                  href="/admin/settings"
-                  className="flex items-center px-4 py-3 text-sm font-light text-gray-600 rounded-sm transition-colors hover:bg-gray-100"
-                >
-                  <Settings className="h-4 w-4 mr-3 text-gray-500" strokeWidth={1.5} />
-                  <span>Configuración</span>
-                </a>
               </div>
             </nav>
             
