@@ -23,6 +23,18 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },
+  // Configuración para manejar errores de SSR
+  typescript: {
+    // ⚠️ Esto es peligroso y debería usarse solo temporalmente
+    ignoreBuildErrors: false,
+  },
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
+  // Configuración para evitar errores de hidratación
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
 };
 
 export default nextConfig;
