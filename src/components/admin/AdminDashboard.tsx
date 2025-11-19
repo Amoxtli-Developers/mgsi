@@ -5,18 +5,36 @@ import { useGetPropertiesQuery } from '@/store/propertiesApi';
 import StatsCards from './StatsCards';
 import PropertiesTable from './PropertiesTable';
 import CreatePropertyModal from './CreatePropertyModal';
-import { Loader2, RefreshCw, Plus } from 'lucide-react';
+import TableSkeleton from './TableSkeleton';
+import { Loader2, RefreshCw, Plus, LogOut } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   // Llamar al endpoint sin filtro para obtener TODAS las propiedades
   const { data: properties = [], isLoading, error, refetch } = useGetPropertiesQuery({ active: 'all' });
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
     setRefreshKey(prev => prev + 1);
-    refetch();
+    try {
+      await refetch();
+    } finally {
+      // Add a small delay to show the skeleton animation
+      setTimeout(() => {
+        setIsRefreshing(false);
+      }, 300);
+    }
+  };
+
+  const handleLogout = () => {
+    // Clear authentication from localStorage
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_authenticated');
+    // Reload the page to trigger auth check
+    window.location.reload();
   };
 
   if (isLoading) {
@@ -67,13 +85,22 @@ export default function AdminDashboard() {
             <Plus className="h-3 w-3" strokeWidth={1.5} />
             <span>Nueva Propiedad</span>
           </button>
-          
+
           <button
             onClick={handleRefresh}
-            className="flex items-center space-x-2 px-4 py-2 border border-gray-200 rounded-sm hover:bg-gray-50 transition-colors text-xs font-light text-gray-600"
+            disabled={isRefreshing}
+            className="flex items-center space-x-2 px-4 py-2 border border-gray-200 rounded-sm hover:bg-gray-50 transition-colors text-xs font-light text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <RefreshCw className="h-3 w-3 text-gray-500" strokeWidth={1.5} />
-            <span>Actualizar</span>
+            <RefreshCw className={`h-3 w-3 text-gray-500 ${isRefreshing ? 'animate-spin' : ''}`} strokeWidth={1.5} />
+            <span>{isRefreshing ? 'Actualizando...' : 'Actualizar'}</span>
+          </button>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center space-x-2 px-4 py-2 border border-red-200 rounded-sm hover:bg-red-50 transition-colors text-xs font-light text-red-600"
+          >
+            <LogOut className="h-3 w-3 text-red-500" strokeWidth={1.5} />
+            <span>Cerrar Sesión</span>
           </button>
         </div>
       </div>
@@ -83,7 +110,11 @@ export default function AdminDashboard() {
 
       {/* Properties Table */}
       <div className="mt-8">
-        <PropertiesTable properties={properties} onRefresh={handleRefresh} />
+        {isRefreshing ? (
+          <TableSkeleton />
+        ) : (
+          <PropertiesTable properties={properties} onRefresh={handleRefresh} />
+        )}
       </div>
 
       {/* Create Property Modal */}

@@ -1,7 +1,7 @@
 'use client';
 
-import { ReactNode } from 'react';
-import { Home, Settings, Users } from 'lucide-react';
+import { ReactNode, useState, useEffect } from 'react';
+import { Home } from 'lucide-react';
 import NotificationProvider from '@/components/ui/notifications/NotificationProvider';
 
 interface AdminClientLayoutProps {
@@ -9,6 +9,41 @@ interface AdminClientLayoutProps {
 }
 
 export default function AdminClientLayout({ children }: AdminClientLayoutProps) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    // Check authentication status
+    const checkAuth = () => {
+      const authenticated = localStorage.getItem('admin_authenticated');
+      const token = localStorage.getItem('admin_token');
+      setIsAuthenticated(authenticated === 'true' && !!token);
+      setIsChecking(false);
+    };
+
+    checkAuth();
+
+    // Listen for storage changes (logout from another tab)
+    const handleStorageChange = () => {
+      checkAuth();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // If checking auth or not authenticated, render without sidebar
+  if (isChecking || !isAuthenticated) {
+    return (
+      <NotificationProvider>
+        <div className="min-h-screen bg-gray-50">
+          {children}
+        </div>
+      </NotificationProvider>
+    );
+  }
+
+  // Render with sidebar for authenticated users
   return (
     <NotificationProvider>
       <div className="min-h-screen bg-gray-50">
@@ -23,7 +58,7 @@ export default function AdminClientLayout({ children }: AdminClientLayoutProps) 
                 MG Servicio Inmobiliario
               </p>
             </div>
-            
+
             <nav className="mt-8">
               <div className="px-6 space-y-2">
                 <a
@@ -35,7 +70,7 @@ export default function AdminClientLayout({ children }: AdminClientLayoutProps) 
                 </a>
               </div>
             </nav>
-            
+
             {/* Regresar al sitio */}
             <div className="absolute bottom-6 left-6 right-6">
               <a
