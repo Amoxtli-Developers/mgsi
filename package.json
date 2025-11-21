@@ -17,6 +17,7 @@
     "@radix-ui/react-toast": "^1.1.5",
     "@reduxjs/toolkit": "^2.8.2",
     "@sendgrid/mail": "^8.1.5",
+    "@supabase/supabase-js": "^2.84.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "framer-motion": "^11.0.5",

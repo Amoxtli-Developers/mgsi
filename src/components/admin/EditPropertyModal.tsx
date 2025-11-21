@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X, Plus, Loader2 } from 'lucide-react';
+import { X, Plus, Loader2, Upload, Trash2 } from 'lucide-react';
 import { useUpdatePropertyMutation } from '@/store/propertiesApi';
 import { useNotification } from '@/components/ui/notifications/NotificationProvider';
 import type { Property } from '@/types';
+import Image from 'next/image';
 
 const propertySchema = z.object({
   name: z.string().min(1, 'El nombre es requerido').max(200, 'Máximo 200 caracteres'),
@@ -17,7 +18,6 @@ const propertySchema = z.object({
   salePrice: z.number().min(0, 'El precio debe ser positivo').optional(),
   amenities: z.array(z.string()).optional(),
   notes: z.string().max(500, 'Máximo 500 caracteres').optional(),
-  image: z.string().url('Debe ser una URL válida').optional().or(z.literal('')),
   type: z.enum(['Renta', 'Venta', 'Ambos']).optional(),
   active: z.boolean().optional(),
 }).refine((data) => {
@@ -40,6 +40,9 @@ export default function EditPropertyModal({ isOpen, onClose, property }: EditPro
   const { showNotification } = useNotification();
   const [amenityInput, setAmenityInput] = useState('');
   const [amenitiesList, setAmenitiesList] = useState<string[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [deletingImageIndex, setDeletingImageIndex] = useState<number | null>(null);
 
   const {
     register,
@@ -65,12 +68,16 @@ export default function EditPropertyModal({ isOpen, onClose, property }: EditPro
         rentPrice: property.rentPrice || 0,
         salePrice: property.salePrice || 0,
         notes: property.notes || '',
-        image: property.image || '',
         type: property.type,
         active: property.active,
       });
       setAmenitiesList(property.amenities || []);
       setValue('amenities', property.amenities || []);
+      // Fix: Explicitly set active as boolean
+      setValue('active', property.active);
+
+      // Load existing images
+      setUploadedImages(property.images || []);
     }
   }, [isOpen, property, reset, setValue]);
 
@@ -89,6 +96,183 @@ export default function EditPropertyModal({ isOpen, onClose, property }: EditPro
     setValue('amenities', newAmenities);
   };
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!property) return;
+
+    const files = Array.from(e.target.files || []);
+
+    if (files.length === 0) return;
+
+    // Check if adding these files would exceed the 5 image limit
+    if (uploadedImages.length + files.length > 5) {
+      showNotification({
+        type: 'error',
+        title: 'Límite de imágenes excedido',
+        message: `Solo puedes tener máximo 5 imágenes por propiedad. Actualmente tienes ${uploadedImages.length}.`,
+      });
+      e.target.value = '';
+      return;
+    }
+
+    // Validate file types
+    const validFiles = files.filter((file) => {
+      const isValid = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type);
+      if (!isValid) {
+        showNotification({
+          type: 'error',
+          title: 'Tipo de archivo inválido',
+          message: `${file.name} no es un formato válido. Solo se permiten JPG, PNG y WebP.`,
+        });
+      }
+      return isValid;
+    });
+
+    // Validate file sizes (10MB max)
+    const validSizedFiles = validFiles.filter((file) => {
+      const isValid = file.size <= 10 * 1024 * 1024; // 10MB
+      if (!isValid) {
+        showNotification({
+          type: 'error',
+          title: 'Archivo muy grande',
+          message: `${file.name} excede el límite de 10MB.`,
+        });
+      }
+      return isValid;
+    });
+
+    if (validSizedFiles.length === 0) return;
+
+    setIsUploading(true);
+
+    try {
+      const uploadPromises = validSizedFiles.map(async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('propertyId', property._id);
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Error uploading file');
+        }
+
+        const data = await response.json();
+        return data.imageUrl;
+      });
+
+      const urls = await Promise.all(uploadPromises);
+      const newImages = [...uploadedImages, ...urls];
+
+      // Update local state
+      setUploadedImages(newImages);
+
+      // Update the property in MongoDB immediately
+      await updateProperty({
+        id: property._id,
+        data: {
+          images: newImages,
+        },
+      }).unwrap();
+
+      showNotification({
+        type: 'success',
+        title: 'Imágenes cargadas',
+        message: `${urls.length} imagen(es) cargada(s) exitosamente.`,
+      });
+    } catch (error: any) {
+      showNotification({
+        type: 'error',
+        title: 'Error al cargar imágenes',
+        message: error.message || 'Ocurrió un error al cargar las imágenes.',
+      });
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      e.target.value = '';
+    }
+  };
+
+  const removeImage = async (index: number) => {
+    if (!property) return;
+
+    const imageUrl = uploadedImages[index];
+    const newImages = uploadedImages.filter((_, i) => i !== index);
+
+    setDeletingImageIndex(index);
+
+    try {
+      // First, delete from Supabase storage
+      const storageResponse = await fetch(`/api/upload?imageUrl=${encodeURIComponent(imageUrl)}`, {
+        method: 'DELETE',
+      });
+
+      if (!storageResponse.ok) {
+        throw new Error('Error deleting image from storage');
+      }
+
+      // Then, update the property in MongoDB immediately
+      const dbResponse = await updateProperty({
+        id: property._id,
+        data: {
+          images: newImages,
+        },
+      }).unwrap();
+
+      // Update local state
+      setUploadedImages(newImages);
+
+      showNotification({
+        type: 'success',
+        title: 'Imagen eliminada',
+        message: 'La imagen ha sido eliminada correctamente.',
+      });
+    } catch (error: any) {
+      showNotification({
+        type: 'error',
+        title: 'Error al eliminar',
+        message: error?.data?.message || 'No se pudo eliminar la imagen.',
+      });
+    } finally {
+      setDeletingImageIndex(null);
+    }
+  };
+
+  const moveImage = async (fromIndex: number, direction: 'left' | 'right') => {
+    if (!property) return;
+
+    const toIndex = direction === 'left' ? fromIndex - 1 : fromIndex + 1;
+
+    if (toIndex < 0 || toIndex >= uploadedImages.length) return;
+
+    const newImages = [...uploadedImages];
+    [newImages[fromIndex], newImages[toIndex]] = [newImages[toIndex], newImages[fromIndex]];
+
+    // Update local state immediately for smooth UX
+    setUploadedImages(newImages);
+
+    try {
+      // Update the property in MongoDB
+      await updateProperty({
+        id: property._id,
+        data: {
+          images: newImages,
+        },
+      }).unwrap();
+    } catch (error: any) {
+      // Revert local state on error
+      setUploadedImages(uploadedImages);
+      showNotification({
+        type: 'error',
+        title: 'Error al reordenar',
+        message: 'No se pudo actualizar el orden de las imágenes.',
+      });
+    }
+  };
+
   const onSubmit = async (data: PropertyFormData) => {
     if (!property) return;
 
@@ -98,13 +282,14 @@ export default function EditPropertyModal({ isOpen, onClose, property }: EditPro
         amenities: amenitiesList,
         rentPrice: data.rentPrice || 0,
         salePrice: data.salePrice || 0,
+        images: uploadedImages,
       };
 
       const result = await updateProperty({
         id: property._id,
         data: updateData,
       }).unwrap();
-      
+
       showNotification({
         type: 'success',
         title: 'Propiedad actualizada exitosamente',
@@ -125,6 +310,7 @@ export default function EditPropertyModal({ isOpen, onClose, property }: EditPro
     reset();
     setAmenitiesList([]);
     setAmenityInput('');
+    setUploadedImages([]);
     onClose();
   };
 
@@ -134,7 +320,7 @@ export default function EditPropertyModal({ isOpen, onClose, property }: EditPro
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={handleClose} />
-      
+
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative w-full max-w-2xl bg-white rounded-sm shadow-xl">
@@ -158,7 +344,7 @@ export default function EditPropertyModal({ isOpen, onClose, property }: EditPro
               <h3 className="text-sm font-light text-gray-900 tracking-tight uppercase">
                 Información Básica
               </h3>
-              
+
               <div>
                 <label className="block text-xs font-light text-gray-600 mb-2 tracking-wide uppercase">
                   Nombre de la Propiedad *
@@ -208,7 +394,7 @@ export default function EditPropertyModal({ isOpen, onClose, property }: EditPro
               <h3 className="text-sm font-light text-gray-900 tracking-tight uppercase">
                 Precios
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-light text-gray-600 mb-2 tracking-wide uppercase">
@@ -238,7 +424,7 @@ export default function EditPropertyModal({ isOpen, onClose, property }: EditPro
                   />
                 </div>
               </div>
-              
+
               {errors.rentPrice && (
                 <p className="text-xs text-red-600 font-light">{errors.rentPrice.message}</p>
               )}
@@ -266,7 +452,9 @@ export default function EditPropertyModal({ isOpen, onClose, property }: EditPro
                   Estado
                 </label>
                 <select
-                  {...register('active', { setValueAs: (value) => value === 'true' })}
+                  {...register('active')}
+                  value={watch('active') ? 'true' : 'false'}
+                  onChange={(e) => setValue('active', e.target.value === 'true')}
                   className="w-full px-3 py-2 border border-gray-200 rounded-sm focus:outline-none focus:border-brand-primary text-sm"
                 >
                   <option value="true">Activa</option>
@@ -275,12 +463,114 @@ export default function EditPropertyModal({ isOpen, onClose, property }: EditPro
               </div>
             </div>
 
+            {/* Imágenes */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-light text-gray-900 tracking-tight uppercase">
+                Imágenes
+              </h3>
+
+              <div>
+                <label className="block text-xs font-light text-gray-600 mb-2 tracking-wide uppercase">
+                  Cargar Imágenes (JPG, PNG, WebP - máx 5 imágenes, 10MB cada una)
+                </label>
+                <div className="flex items-center justify-center w-full">
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-200 border-dashed rounded-sm cursor-pointer hover:border-brand-primary transition-colors">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Upload className="w-8 h-8 mb-2 text-gray-400" strokeWidth={1.5} />
+                      <p className="mb-1 text-xs text-gray-500 font-light">
+                        <span className="font-normal">Click para cargar</span> o arrastra archivos
+                      </p>
+                      <p className="text-xs text-gray-400 font-light">JPG, PNG o WebP</p>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      multiple
+                      onChange={handleFileSelect}
+                      disabled={isUploading}
+                    />
+                  </label>
+                </div>
+
+                {isUploading && (
+                  <div className="flex items-center justify-center mt-3 text-xs text-gray-500">
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" strokeWidth={1.5} />
+                    Subiendo imágenes...
+                  </div>
+                )}
+              </div>
+
+              {uploadedImages.length > 0 && (
+                <div className="grid grid-cols-3 gap-3">
+                  {uploadedImages.map((imageUrl, index) => (
+                    <div key={index} className="relative group aspect-square rounded-sm overflow-hidden border border-gray-200">
+                      <Image
+                        src={imageUrl}
+                        alt={`Imagen ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+
+                      {/* Loading overlay when deleting */}
+                      {deletingImageIndex === index && (
+                        <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-20">
+                          <div className="flex flex-col items-center">
+                            <Loader2 className="h-6 w-6 text-white animate-spin mb-1" strokeWidth={1.5} />
+                            <span className="text-white text-xs">Eliminando...</span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all">
+                        <div className="absolute top-1 right-1 flex gap-1">
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            disabled={deletingImageIndex === index}
+                            className="p-1 bg-red-500 text-white rounded-sm opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <Trash2 className="h-3 w-3" strokeWidth={1.5} />
+                          </button>
+                        </div>
+                        {index > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => moveImage(index, 'left')}
+                            disabled={deletingImageIndex !== null}
+                            className="absolute left-1 top-1/2 -translate-y-1/2 p-1 bg-white text-gray-800 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            ←
+                          </button>
+                        )}
+                        {index < uploadedImages.length - 1 && (
+                          <button
+                            type="button"
+                            onClick={() => moveImage(index, 'right')}
+                            disabled={deletingImageIndex !== null}
+                            className="absolute right-1 top-1/2 -translate-y-1/2 p-1 bg-white text-gray-800 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            →
+                          </button>
+                        )}
+                      </div>
+                      {index === 0 && (
+                        <div className="absolute bottom-1 left-1 px-2 py-0.5 bg-black bg-opacity-75 text-white text-xs rounded-sm">
+                          Principal
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Amenidades */}
             <div className="space-y-4">
               <h3 className="text-sm font-light text-gray-900 tracking-tight uppercase">
                 Amenidades
               </h3>
-              
+
               <div className="flex gap-2">
                 <input
                   value={amenityInput}
@@ -324,20 +614,6 @@ export default function EditPropertyModal({ isOpen, onClose, property }: EditPro
               <h3 className="text-sm font-light text-gray-900 tracking-tight uppercase">
                 Información Adicional
               </h3>
-              
-              <div>
-                <label className="block text-xs font-light text-gray-600 mb-2 tracking-wide uppercase">
-                  URL de Imagen
-                </label>
-                <input
-                  {...register('image')}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-sm focus:outline-none focus:border-brand-primary text-sm"
-                  placeholder="https://ejemplo.com/imagen.jpg"
-                />
-                {errors.image && (
-                  <p className="mt-1 text-xs text-red-600 font-light">{errors.image.message}</p>
-                )}
-              </div>
 
               <div>
                 <label className="block text-xs font-light text-gray-600 mb-2 tracking-wide uppercase">
@@ -366,7 +642,7 @@ export default function EditPropertyModal({ isOpen, onClose, property }: EditPro
               </button>
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || isUploading}
                 className="px-4 py-2 bg-brand-primary text-white text-xs font-light tracking-wide rounded-sm hover:bg-brand-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
               >
                 {isLoading && <Loader2 className="h-3 w-3 animate-spin" strokeWidth={1.5} />}

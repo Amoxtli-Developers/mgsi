@@ -78,18 +78,49 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     const db = await getDatabase();
-    
-    // Buscar la propiedad por ID
-    const property = await db
-      .collection('properties')
-      .findOne({ _id: new ObjectId(id) });
 
-    if (!property) {
+    // Use aggregation pipeline to ensure images array exists
+    const pipeline = [
+      {
+        $match: { _id: new ObjectId(id) }
+      },
+      {
+        $addFields: {
+          images: {
+            $cond: {
+              if: { $isArray: '$images' },
+              then: '$images',
+              else: {
+                $cond: {
+                  if: {
+                    $and: [
+                      { $ne: ['$image', ''] },
+                      { $ne: ['$image', null] }
+                    ]
+                  },
+                  then: ['$image'],
+                  else: []
+                }
+              }
+            }
+          }
+        }
+      }
+    ];
+
+    const properties = await db
+      .collection('properties')
+      .aggregate(pipeline)
+      .toArray();
+
+    if (!properties || properties.length === 0) {
       return NextResponse.json(
         { message: 'Propiedad no encontrada' },
         { status: 404 }
       );
     }
+
+    const property = properties[0];
 
     // Convertir ObjectId a string para la respuesta
     const propertyWithStringId = {
@@ -135,13 +166,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     // Validar campos si se proporcionan
-    const { name, surface, description, rentPrice, salePrice, amenities, notes, image, type, active } = body;
-    
+    const { name, surface, description, rentPrice, salePrice, amenities, notes, image, images, type, active } = body;
+
     // Validar que al menos uno de los precios sea mayor a 0 si se proporcionan
     if ((rentPrice !== undefined || salePrice !== undefined)) {
       const newRentPrice = rentPrice !== undefined ? Number(rentPrice) : existingProperty.rentPrice;
       const newSalePrice = salePrice !== undefined ? Number(salePrice) : existingProperty.salePrice;
-      
+
       if (newRentPrice <= 0 && newSalePrice <= 0) {
         return NextResponse.json(
           { message: 'Debe especificar al menos un precio mayor a 0 (renta o venta)' },
@@ -149,11 +180,19 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         );
       }
     }
-    
+
     // Validar que amenities sea un array si se proporciona
     if (amenities && !Array.isArray(amenities)) {
       return NextResponse.json(
         { message: 'Amenities debe ser un array' },
+        { status: 400 }
+      );
+    }
+
+    // Validar que images sea un array si se proporciona
+    if (images && !Array.isArray(images)) {
+      return NextResponse.json(
+        { message: 'Images debe ser un array' },
         { status: 400 }
       );
     }
@@ -178,7 +217,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (salePrice !== undefined) updateData.salePrice = Number(salePrice) || 0;
     if (amenities !== undefined) updateData.amenities = amenities;
     if (notes !== undefined) updateData.notes = notes?.trim() || '';
-    if (image !== undefined) updateData.image = image?.trim() || '';
+    if (images !== undefined) {
+      updateData.images = images;
+      // Update the legacy image field to be the first image in the array
+      updateData.image = images.length > 0 ? images[0] : '';
+    } else if (image !== undefined) {
+      updateData.image = image?.trim() || '';
+    }
     if (type !== undefined) updateData.type = type;
     if (active !== undefined) updateData.active = Boolean(active);
 
@@ -191,20 +236,51 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
 
     if (result.modifiedCount === 1 || result.matchedCount === 1) {
-      // Obtener la propiedad actualizada
-      const updatedProperty = await db
+      // Obtener la propiedad actualizada usando aggregation para calcular images
+      const pipeline = [
+        {
+          $match: { _id: new ObjectId(id) }
+        },
+        {
+          $addFields: {
+            images: {
+              $cond: {
+                if: { $isArray: '$images' },
+                then: '$images',
+                else: {
+                  $cond: {
+                    if: {
+                      $and: [
+                        { $ne: ['$image', ''] },
+                        { $ne: ['$image', null] }
+                      ]
+                    },
+                    then: ['$image'],
+                    else: []
+                  }
+                }
+              }
+            }
+          }
+        }
+      ];
+
+      const properties = await db
         .collection('properties')
-        .findOne({ _id: new ObjectId(id) });
+        .aggregate(pipeline)
+        .toArray();
+
+      const updatedProperty = properties[0];
 
       const propertyWithStringId = {
         ...updatedProperty,
-        _id: updatedProperty!._id.toString(),
+        _id: updatedProperty._id.toString(),
       };
 
       return NextResponse.json(
-        { 
+        {
           message: 'Propiedad actualizada exitosamente',
-          property: propertyWithStringId 
+          property: propertyWithStringId
         },
         { status: 200 }
       );

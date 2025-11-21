@@ -7,7 +7,8 @@ export interface Property {
   salePrice: number;
   amenities: string[];
   notes: string;
-  image: string;
+  image: string; // Legacy: First/main image (kept for backward compatibility)
+  images: string[]; // Array of all image URLs
   type?: 'Renta' | 'Venta' | 'Ambos';
   active: boolean;
   createdAt: string;

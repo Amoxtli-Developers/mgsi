@@ -14,6 +14,7 @@ interface CreatePropertyRequest {
   amenities?: string[];
   notes?: string;
   image?: string;
+  images?: string[];
   type?: 'Renta' | 'Venta' | 'Ambos';
 }
 
@@ -33,6 +34,7 @@ interface UpdatePropertyRequest {
     amenities: string[];
     notes: string;
     image: string;
+    images: string[];
     type: 'Renta' | 'Venta' | 'Ambos';
     active: boolean;
   }>;
