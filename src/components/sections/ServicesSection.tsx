@@ -13,7 +13,7 @@ const services = [
   },
   {
     icon: CreditCard,
-    title: 'Renta y Arrendamiento',
+    title: 'Renta',
     description: 'Gestión integral de propiedades en renta con seguimiento completo del proceso.',
     features: ['Búsqueda de inquilinos', 'Contratos legales', 'Administración'],
   },
